@@ -24,14 +24,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private Button mAnswerButton3;
     private Button mAnswerButton4;
 
-    private QuestionBank mQuestionBank = this.initalizeQB();
-    private Question mCurrentQuestion = mQuestionBank.getQuestion();
+    private QuestionBank mQuestionBank;
+    private Question mCurrentQuestion;
+    private int mNumberOfQuestions;
 
     private int mScore;
     private int mNumberOfQuestions;
 
     /**
-     * Called when a view has been clicked.
+     * Called when an answer button has been clicked.
      *
      * @param v The view that was clicked.
      */
@@ -44,7 +45,14 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(getApplicationContext(),"Correct", Toast.LENGTH_SHORT).show();
             mScore++;
         } else {
-            Toast.makeText(getApplicationContext(),"Correct", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),"Wrong answer", Toast.LENGTH_SHORT).show();
+        }
+
+        if (--mNumberOfQuestions == 0) {
+            // No question left, end the game
+        } else {
+            mCurrentQuestion = mQuestionBank.getQuestion();
+            displayQuestion(mCurrentQuestion);
         }
     }
 
@@ -109,14 +117,16 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         mQuestionBank = this.initalizeQB();
         mCurrentQuestion = mQuestionBank.getQuestion();
-
+        this.displayQuestion(mCurrentQuestion);
+        mNumberOfQuestions = 4;
+        mScore = 0;
 
         // Use the same listener for the four buttons.
         // The tag value will be used to distinguish the button triggered
         mAnswerButton1.setOnClickListener(this);
         mAnswerButton2.setOnClickListener(this);
         mAnswerButton3.setOnClickListener(this);
-        mAnswerButton1.setOnClickListener(this);
+        mAnswerButton4.setOnClickListener(this);
     }
 
     /**
@@ -129,7 +139,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         mAnswerButton1.setText(question.getChoiceList().get(0));
         mAnswerButton2.setText(question.getChoiceList().get(1));
         mAnswerButton3.setText(question.getChoiceList().get(2));
-        mAnswerButton4.setText(question.getChoiceList().get(4));
+        mAnswerButton4.setText(question.getChoiceList().get(3));
 
         // Use the tag property to 'name' the buttons
         mAnswerButton1.setTag(0);

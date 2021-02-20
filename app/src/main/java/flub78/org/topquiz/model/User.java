@@ -9,14 +9,10 @@ import java.util.List;
  */
 public class User {
 
+    // No constructor to initialize firstName, as it is only known when the user
+    // enters his/her name
+
     // public interface
-    /**
-    public User(String firstNamme) {
-
-        mFirstNamme = firstNamme;
-     }
-     */
-
     public String getFirstNamme() {
         return mFirstNamme;
     }
