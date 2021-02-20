@@ -27,4 +27,15 @@ public class Question {
 
     private int mAnswerIndex;
 
+    public String getQuestion() {
+        return mQuestion;
+    }
+
+    public List<String> getChoiceList() {
+        return mChoiceList;
+    }
+
+    public int getAnswerIndex() {
+        return mAnswerIndex;
+    }
 }

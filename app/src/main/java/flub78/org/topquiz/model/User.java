@@ -10,10 +10,12 @@ import java.util.List;
 public class User {
 
     // public interface
+    /**
     public User(String firstNamme) {
 
         mFirstNamme = firstNamme;
      }
+     */
 
     public String getFirstNamme() {
         return mFirstNamme;
