@@ -2,7 +2,10 @@ package flub78.org.topquiz.controller;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -29,7 +32,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private int mNumberOfQuestions;
 
     private int mScore;
-    private int mNumberOfQuestions;
+    public static final String BUNDLE_EXTRA_SCORE = "BUNDLE_EXTRA_SCORE";
 
     /**
      * Called when an answer button has been clicked.
@@ -50,6 +53,21 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         if (--mNumberOfQuestions == 0) {
             // No question left, end the game
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("Well done!")
+                    .setMessage("Your score is " + mScore)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent();
+                            intent.putExtra(BUNDLE_EXTRA_SCORE, mScore);
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        }
+                    })
+                    .create()
+                    .show();
         } else {
             mCurrentQuestion = mQuestionBank.getQuestion();
             displayQuestion(mCurrentQuestion);
