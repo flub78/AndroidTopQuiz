@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,6 +21,9 @@ import flub78.org.topquiz.R;
 import flub78.org.topquiz.model.Question;
 import flub78.org.topquiz.model.QuestionBank;
 
+/**
+ * Activity to ask questions and manage the answer
+ */
 public class GameActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView mQuestionText;
@@ -34,87 +39,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private int mScore;
     public static final String BUNDLE_EXTRA_SCORE = "BUNDLE_EXTRA_SCORE";
 
-    /**
-     * Called when an answer button has been clicked.
-     *
-     * @param v The view that was clicked.
-     */
-    @Override
-    public void onClick(View v) {
-
-        int responseIndex = (int) v.getTag();
-
-        if (responseIndex == mCurrentQuestion.getAnswerIndex()) {
-            Toast.makeText(getApplicationContext(),"Correct", Toast.LENGTH_SHORT).show();
-            mScore++;
-        } else {
-            Toast.makeText(getApplicationContext(),"Wrong answer", Toast.LENGTH_SHORT).show();
-        }
-
-        if (--mNumberOfQuestions == 0) {
-            // No question left, end the game
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-            builder.setTitle("Well done!")
-                    .setMessage("Your score is " + mScore)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent();
-                            intent.putExtra(BUNDLE_EXTRA_SCORE, mScore);
-                            setResult(RESULT_OK, intent);
-                            finish();
-                        }
-                    })
-                    .create()
-                    .show();
-        } else {
-            mCurrentQuestion = mQuestionBank.getQuestion();
-            displayQuestion(mCurrentQuestion);
-        }
-    }
-
-
-    /**
-     * Initialize and
-     * @return a QuestionBank
-     */
-    private QuestionBank initalizeQB() {
-        Question question1;
-        try {
-            question1 = new Question("Who is the creator of Android?",
-                    Arrays.asList("Andy Rubin",
-                            "Steve Wozniak",
-                            "Jake Wharton",
-                            "Paul Smith"),
-                    0);
-
-            Question question2 = new Question("When did the first man land on the moon?",
-                    Arrays.asList("1958",
-                            "1962",
-                            "1967",
-                            "1969"),
-                    3);
-
-            Question question3 = new Question("What is the house number of The Simpsons?",
-                    Arrays.asList("42",
-                            "101",
-                            "666",
-                            "742"),
-                    3);
-
-            System.out.println("Returning a non empty question bank");
-            return new QuestionBank(Arrays.asList(question1,
-                    question2,
-                    question3));
-
-        } catch (Exception e) {
-            // TODO: replace by an error dialog box
-            System.out.println("Bug: please contact the developer with reference 142");
-            e.printStackTrace();
-        }
-        return null;
-    }
+    boolean mEnableTouchEvents = true;
 
     /**
      * Activity onCreate method
@@ -145,6 +70,140 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         mAnswerButton2.setOnClickListener(this);
         mAnswerButton3.setOnClickListener(this);
         mAnswerButton4.setOnClickListener(this);
+    }
+
+    /**
+     * Called when an answer button has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v) {
+
+        int responseIndex = (int) v.getTag();
+
+        if (responseIndex == mCurrentQuestion.getAnswerIndex()) {
+            Toast.makeText(getApplicationContext(),"Correct", Toast.LENGTH_SHORT).show();
+            mScore++;
+        } else {
+            Toast.makeText(getApplicationContext(),"Wrong answer", Toast.LENGTH_SHORT).show();
+        }
+
+        mEnableTouchEvents = false;
+
+        // memory leak below
+        // https://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mEnableTouchEvents = true;
+
+                // If this is the last question, ends the game.
+                // Else, display the next question.
+                if (--mNumberOfQuestions == 0) {
+                    // End the game
+                    endGame();
+                } else {
+                    mCurrentQuestion = mQuestionBank.getQuestion();
+                    displayQuestion(mCurrentQuestion);
+                }
+            }
+        }, 2000); // LENGTH_SHORT is usually 2 second long
+    }
+
+    /**
+     * Disable screen during display of the toast message
+     * @param ev
+     * @return
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return mEnableTouchEvents && super.dispatchTouchEvent(ev);
+    }
+
+    private void endGame() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Well done!")
+                .setMessage("Your score is " + mScore)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // End the activity
+                        Intent intent = new Intent();
+                        intent.putExtra(BUNDLE_EXTRA_SCORE, mScore);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                })
+                .setCancelable(false)
+                .create()
+                .show();
+    }
+
+    /**
+     * Initialize and
+     * @return a QuestionBank
+     */
+    private QuestionBank initalizeQB() {
+        Question question1;
+        try {
+            question1 = new Question("Who is the creator of Android?",
+                    Arrays.asList("Andy Rubin",
+                            "Steve Wozniak",
+                            "Jake Wharton",
+                            "Paul Smith"),
+                    0);
+
+            Question question2 = new Question("When did the first man land on the moon?",
+                    Arrays.asList("1958",
+                            "1962",
+                            "1967",
+                            "1969"),
+                    3);
+
+            Question question3 = new Question("What is the house number of The Simpsons?",
+                    Arrays.asList("42",
+                            "101",
+                            "666",
+                            "742"),
+                    3);
+
+            Question question4 = new Question("When did the first man land on the moon?",
+                    Arrays.asList("1958", "1962", "1967", "1969"),
+                    3);
+
+            Question question5 = new Question("What is the capital of Romania?",
+                    Arrays.asList("Bucarest", "Warsaw", "Budapest", "Berlin"),
+                    0);
+
+            Question question6 = new Question("Who did the Mona Lisa paint?",
+                    Arrays.asList("Michelangelo", "Leonardo Da Vinci", "Raphael", "Carravagio"),
+                    1);
+
+            Question question7 = new Question("In which city is the composer Frédéric Chopin buried?",
+                    Arrays.asList("Strasbourg", "Warsaw", "Paris", "Moscow"),
+                    2);
+
+            Question question8 = new Question("What is the country top-level domain of Belgium?",
+                    Arrays.asList(".bg", ".bm", ".bl", ".be"),
+                    3);
+
+            Question question9 = new Question("What is the house number of The Simpsons?",
+                    Arrays.asList("42", "101", "666", "742"),
+                    3);
+
+            System.out.println("Returning a non empty question bank");
+            return new QuestionBank(Arrays.asList(question1,
+                    question2,
+                    question3, question4, question5, question6, question7, question8, question9));
+
+        } catch (Exception e) {
+            // TODO: replace by an error dialog box
+            System.out.println("Bug: please contact the developer with reference 142");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
