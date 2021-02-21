@@ -16,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import flub78.org.topquiz.R;
 import flub78.org.topquiz.model.Question;
@@ -193,10 +195,27 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                     Arrays.asList("42", "101", "666", "742"),
                     3);
 
-            System.out.println("Returning a non empty question bank");
-            return new QuestionBank(Arrays.asList(question1,
+            System.out.println("Shuffling le list");
+            List l = Arrays.asList(question1,
                     question2,
-                    question3, question4, question5, question6, question7, question8, question9));
+                    question3, question4, question5, question6, question7, question8, question9);
+
+/*
+            for (int i = 0; i < l.size(); i++) {
+                System.out.println(((Question) l.get(i)).getQuestion());
+            }
+*/
+
+            Collections.shuffle(l);
+/*
+            System.out.println("after shuffling");
+            for (int i = 0; i < l.size(); i++) {
+                System.out.println(((Question) l.get(i)).getQuestion());
+            }
+*/
+
+            System.out.println("Returning a non empty question bank");
+            return new QuestionBank(l);
 
         } catch (Exception e) {
             // TODO: replace by an error dialog box
